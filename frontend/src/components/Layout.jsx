@@ -8,7 +8,7 @@ export default function Layout() {
     <>
       <TopAppBar />
       <SideNavBar />
-      <main className="pt-24 pb-28 lg:pb-8 pl-0 lg:pl-64 min-h-screen px-4 md:px-margin">
+      <main className="pt-24 pb-28 lg:pb-8 pl-0 lg:pl-64 min-h-screen px-4 md:px-margin gradient-mesh">
         <Outlet />
       </main>
       <BottomNavBar />

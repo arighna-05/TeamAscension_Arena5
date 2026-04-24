@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import WindowsLoader from '../components/WindowsLoader';
 
 export default function Marketplace() {
   const { currentUser } = useAuth();
@@ -291,8 +292,7 @@ export default function Marketplace() {
       {/* Offer Cards */}
       {loading ? (
         <div className="text-center py-10 flex flex-col items-center justify-center text-outline">
-          <span className="material-symbols-outlined animate-spin text-4xl mb-4">sync</span>
-          Loading marketplace offers...
+          <WindowsLoader label="Loading marketplace offers..." />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-bento-gap">

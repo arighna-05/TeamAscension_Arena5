@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import WindowsLoader from '../components/WindowsLoader';
 
 export default function Settings() {
   const { currentUser, logout, updateUserProfile } = useAuth();
@@ -128,7 +129,7 @@ export default function Settings() {
           >
             {isSaving ? (
               <>
-                <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+                <WindowsLoader size="sm" white />
                 Saving...
               </>
             ) : (

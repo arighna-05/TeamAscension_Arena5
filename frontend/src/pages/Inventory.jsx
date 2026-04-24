@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import WindowsLoader from '../components/WindowsLoader';
 
 const LANGUAGES = [
   { code: 'en-IN', label: 'English (India)', flag: '🇮🇳' },
@@ -178,7 +179,7 @@ function CoPilotVoice({ username, onInventoryUpdated }) {
           )}
           <div className={`relative w-28 h-28 rounded-full bg-[#4A6741] flex items-center justify-center shadow-[0_0_40px_rgba(74,103,65,0.8)] ring-4 ring-[#4A6741]/50 border border-white/10 z-10 transition-transform ${isListening ? 'scale-95' : 'hover:scale-105 active:scale-95'}`}>
             {parsing
-              ? <span className="material-symbols-outlined text-[48px] text-white animate-spin">autorenew</span>
+              ? <WindowsLoader size="sm" white label="Processing..." />
               : <span className="material-symbols-outlined text-[48px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>{isListening ? 'mic' : 'mic_none'}</span>
             }
           </div>
@@ -255,8 +256,7 @@ export default function Inventory() {
 
       {loading ? (
         <div className="text-center py-10 text-outline flex flex-col items-center gap-2">
-          <span className="material-symbols-outlined animate-spin text-4xl">sync</span>
-          Loading inventory...
+          <WindowsLoader label="Loading inventory..." />
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-12 bg-surface-container-lowest rounded-2xl border border-dashed border-outline-variant">

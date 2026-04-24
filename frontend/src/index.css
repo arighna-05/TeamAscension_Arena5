@@ -2,10 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Google Fonts weight fix ──────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    transition: background-color 0.3s ease;
+  }
+}
+
+/* ─── Reusable component classes ───────────────────────────────── */
 @layer components {
   .bento-card {
-      @apply bg-surface-container-lowest/85 border-[1.5px] border-outline-variant;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    @apply bg-surface-container-lowest/85 border-[1.5px] border-outline-variant;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
+
+  .glass-panel {
+    @apply bg-white/60 border border-white/30;
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  }
+}
+
+/* ─── Premium Custom Scrollbar ─────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c3c8bd;
+  border-radius: 99px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #73796f;
+}
+
+/* ─── Fade-in animation ────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* ─── Slide-up entrance for cards ──────────────────────────────── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ─── Windows-Inspired Loading Animation ───────────────────────── */
+/*
+   Five dots that orbit in a circle, each delayed slightly.
+   Mimics the classic Windows 10/11 boot loader.
+*/
+.windows-loader {
+  --dot-size: 8px;
+  --orbit-size: 32px;
+  --color: #334f2b;
+  position: relative;
+  width: calc(var(--orbit-size) * 2 + var(--dot-size));
+  height: calc(var(--orbit-size) * 2 + var(--dot-size));
+}
+.windows-loader.loader-sm {
+  --dot-size: 5px;
+  --orbit-size: 14px;
+}
+.windows-loader.loader-lg {
+  --dot-size: 10px;
+  --orbit-size: 40px;
+}
+.windows-loader .dot {
+  position: absolute;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  background: var(--color);
+  top: 50%;
+  left: 50%;
+  margin-top: calc(var(--dot-size) / -2);
+  margin-left: calc(var(--dot-size) / -2);
+  animation: windowsOrbit 2.4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+.windows-loader .dot:nth-child(1) { animation-delay: 0s; }
+.windows-loader .dot:nth-child(2) { animation-delay: -0.15s; }
+.windows-loader .dot:nth-child(3) { animation-delay: -0.3s; }
+.windows-loader .dot:nth-child(4) { animation-delay: -0.45s; }
+.windows-loader .dot:nth-child(5) { animation-delay: -0.6s; }
+
+@keyframes windowsOrbit {
+  0%   { transform: rotate(0deg)   translateX(var(--orbit-size)) rotate(0deg);   opacity: 1; }
+  40%  { opacity: 1; }
+  60%  { opacity: 0.4; }
+  80%  { opacity: 0; }
+  100% { transform: rotate(360deg) translateX(var(--orbit-size)) rotate(-360deg); opacity: 0; }
+}
+
+/* White variant for dark backgrounds */
+.windows-loader.loader-white .dot {
+  --color: #ffffff;
+}
+/* Primary color variant */
+.windows-loader.loader-primary .dot {
+  --color: #334f2b;
+}
+
+/* ─── Shimmer/Skeleton loading ─────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #e2e3e0 25%, #edeeeb 50%, #e2e3e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ─── Subtle gradient background mesh ──────────────────────────── */
+.gradient-mesh {
+  background:
+    radial-gradient(at 20% 20%, rgba(74, 103, 65, 0.08) 0%, transparent 50%),
+    radial-gradient(at 80% 80%, rgba(81, 99, 74, 0.06) 0%, transparent 50%),
+    radial-gradient(at 50% 0%,  rgba(202, 236, 188, 0.1) 0%, transparent 60%);
+}
+
+/* ─── Pulse ring for live indicators ───────────────────────────── */
+@keyframes pulseRing {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  70%  { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.pulse-ring {
+  animation: pulseRing 2s ease-out infinite;
+}
+
+/* ─── Page transition wrapper ──────────────────────────────────── */
+.page-enter {
+  animation: fadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

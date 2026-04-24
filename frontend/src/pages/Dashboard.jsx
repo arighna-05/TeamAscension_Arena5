@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import WindowsLoader from '../components/WindowsLoader';
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
@@ -87,8 +88,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh]">
-        <span className="material-symbols-outlined animate-spin text-5xl text-primary mb-4">sync</span>
-        <p className="font-label-bold text-on-surface-variant">Gathering farm intelligence...</p>
+        <WindowsLoader size="lg" label="Gathering farm intelligence..." />
       </div>
     );
   }
@@ -99,7 +99,7 @@ export default function Dashboard() {
   const totalInventoryQuantity = inventory.reduce((acc, curr) => acc + curr.quantity, 0);
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col gap-bento-gap pb-12">
+    <div className="max-w-6xl mx-auto flex flex-col gap-bento-gap pb-12 page-enter">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-4">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mb-1">Command Dashboard</h1>

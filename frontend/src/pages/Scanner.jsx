@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';export default function Scanner() {
+import { Link } from 'react-router-dom';
+import WindowsLoader from '../components/WindowsLoader';
+
+export default function Scanner() {
   const [scanStatus, setScanStatus] = useState('idle'); // idle, requesting, active, scanning, result
   const [scanResult, setScanResult] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -217,8 +220,7 @@ import { Link } from 'react-router-dom';export default function Scanner() {
           <div className="relative flex-1 bg-stone-900 group flex items-center justify-center overflow-hidden">
             {scanStatus === 'requesting' && (
               <div className="absolute z-10 flex flex-col items-center justify-center text-white">
-                <span className="material-symbols-outlined animate-spin text-4xl mb-4">sync</span>
-                <p className="font-label-bold">Requesting camera access...</p>
+                <WindowsLoader size="md" white label="Requesting camera access..." />
               </div>
             )}
             

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import WindowsLoader from '../components/WindowsLoader';
 
 export default function Wallet() {
   const { currentUser } = useAuth();
@@ -58,8 +59,7 @@ export default function Wallet() {
 
         {loading ? (
           <div className="text-center py-10 flex flex-col items-center justify-center text-outline">
-            <span className="material-symbols-outlined animate-spin text-4xl mb-4">sync</span>
-            Loading transactions...
+            <WindowsLoader label="Loading transactions..." />
           </div>
         ) : transactions.length === 0 ? (
           <div className="text-center py-12">
