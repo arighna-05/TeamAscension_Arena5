@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-
-export default function Scanner() {
+import { Link } from 'react-router-dom';export default function Scanner() {
   const [scanStatus, setScanStatus] = useState('idle'); // idle, requesting, active, scanning, result
   const [scanResult, setScanResult] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [scanHistory, setScanHistory] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
   const streamRef = useRef(null);
@@ -55,26 +56,79 @@ export default function Scanner() {
     }
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+  
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      stopCamera();
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setScanStatus('active');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const triggerUpload = () => {
     fileInputRef.current?.click();
   };
 
-  const startScan = () => {
+  const startScan = async () => {
     setScanStatus('scanning');
     
-    // Simulate network delay for effect
-    setTimeout(() => {
-      // Create a detailed mock report
-      setScanResult({
-        disease: "Tomato Early Blight",
-        confidence: 0.94,
-        symptoms: "Concentric rings (bullseye pattern) on lower leaves, yellowing halos.",
-        treatment: "Apply copper-based fungicide. Ensure proper spacing for airflow.",
-        impact: "Moderate risk of defoliation if untreated."
+    let imageData = imagePreview;
+
+    // If no image preview but camera is active, capture frame from video
+    if (!imageData && streamRef.current && videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoRef.current, 0, 0);
+      imageData = canvas.toDataURL('image/jpeg');
+      setImagePreview(imageData);
+    }
+
+    if (!imageData) {
+      alert("Please capture an image or upload one first.");
+      setScanStatus('active');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/scanner/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_data: imageData })
       });
+      const data = await res.json();
+      
+      const newResult = {
+        ...data,
+        timestamp: new Date().toLocaleString()
+      };
+      
+      setScanResult(newResult);
+      setScanHistory(prev => [newResult, ...prev]);
       setScanStatus('result');
       stopCamera();
-    }, 2000);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to analyze image.');
+      setScanStatus('active');
+    }
   };
 
   const resetScanner = () => {
@@ -94,13 +148,18 @@ export default function Scanner() {
       <div className="relative w-full flex-1 rounded-2xl overflow-hidden border border-outline-variant shadow-sm bg-surface-container-lowest flex flex-col">
         
         {scanStatus === 'idle' && (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface-container-lowest">
+          <div 
+            className={`flex-1 flex flex-col items-center justify-center p-8 text-center transition-colors ${isDragging ? 'bg-primary/10 border-2 border-dashed border-primary m-4 rounded-2xl' : 'bg-surface-container-lowest'}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
             <span className="material-symbols-outlined text-6xl text-primary mb-4">document_scanner</span>
             <h3 className="font-headline-md text-on-surface mb-2">Ready to Scan</h3>
             <p className="font-body-md text-on-surface-variant mb-8 max-w-md">
               Use your device's camera or upload a photo of the affected plant to receive an instant diagnostic report.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
+            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm mb-8">
               <button 
                 onClick={startCamera}
                 className="flex-1 bg-primary hover:bg-primary-fixed-variant text-white font-label-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-colors"
@@ -116,6 +175,34 @@ export default function Scanner() {
                 Upload Image
               </button>
             </div>
+            
+            {scanHistory.length > 0 && (
+              <div className="w-full max-w-2xl text-left mt-4 border-t border-outline-variant pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-label-bold text-on-surface-variant flex items-center gap-2">
+                    <span className="material-symbols-outlined">history</span>
+                    Recent Scans
+                  </h4>
+                  <button onClick={() => setScanHistory([])} className="text-xs font-label-bold text-outline hover:text-error transition-colors flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">delete</span> Clear
+                  </button>
+                </div>
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                  {scanHistory.map((scan, i) => (
+                    <div key={i} className="flex justify-between items-center bg-surface-variant/50 p-3 rounded-xl border border-outline-variant hover:border-primary/30 transition-colors cursor-pointer" onClick={() => { setScanResult(scan); setScanStatus('result'); }}>
+                      <div>
+                        <p className="font-label-bold text-on-surface">{scan.disease}</p>
+                        <p className="font-body-sm text-outline">{scan.crop_name} • {scan.timestamp}</p>
+                      </div>
+                      <span className={`text-xs font-bold px-2 py-1 rounded-md ${scan.disease === 'Healthy Crop' ? 'bg-primary-container text-primary' : 'bg-error-container text-error'}`}>
+                        {Math.round(scan.confidence * 100)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <input 
               type="file" 
               accept="image/*" 
@@ -190,21 +277,60 @@ export default function Scanner() {
               <span className="material-symbols-outlined">arrow_back</span>
               Back to Scanner
             </button>
-            
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-error-container text-on-error-container flex items-center justify-center shadow-sm">
-                <span className="material-symbols-outlined text-4xl">coronavirus</span>
+
+            {/* Header: crop name + disease + confidence */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm flex-shrink-0 ${
+                scanResult.disease === 'Healthy Crop' ? 'bg-primary-container text-on-primary-container' : 'bg-error-container text-on-error-container'
+              }`}>
+                <span className="material-symbols-outlined text-4xl" style={{fontVariationSettings:"'FILL' 1"}}>
+                  {scanResult.disease === 'Healthy Crop' ? 'eco' : 'coronavirus'}
+                </span>
               </div>
-              <div>
-                <h3 className="font-headline-lg text-on-surface">{scanResult.disease}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="font-label-bold text-error px-2 py-1 bg-error/10 rounded-md">
-                    {Math.round(scanResult.confidence * 100)}% Match
+              <div className="flex-1 min-w-0">
+                <p className="font-label-sm text-outline uppercase tracking-wider mb-0.5">{scanResult.crop_name}</p>
+                <h3 className="font-headline-lg text-on-surface leading-tight">{scanResult.disease}</h3>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <span className={`font-label-bold px-2 py-0.5 rounded-md text-sm ${
+                    scanResult.disease === 'Healthy Crop' ? 'text-primary bg-primary/10' : 'text-error bg-error/10'
+                  }`}>
+                    {Math.round(scanResult.confidence * 100)}% Confidence
                   </span>
                   <span className="font-label-sm text-outline">AI Diagnostic Report</span>
                 </div>
               </div>
             </div>
+
+            {/* Quality Score Bar */}
+            {scanResult.quality_score !== undefined && (() => {
+              const qs = scanResult.quality_score;
+              const ql = scanResult.quality_label || 'Fair';
+              const barColor = qs >= 90 ? '#22c55e' : qs >= 70 ? '#84cc16' : qs >= 50 ? '#eab308' : qs >= 30 ? '#f97316' : '#ef4444';
+              const labelColor = qs >= 90 ? 'text-green-600 bg-green-50 border-green-200' : qs >= 70 ? 'text-lime-600 bg-lime-50 border-lime-200' : qs >= 50 ? 'text-yellow-600 bg-yellow-50 border-yellow-200' : qs >= 30 ? 'text-orange-600 bg-orange-50 border-orange-200' : 'text-red-600 bg-red-50 border-red-200';
+              return (
+                <div className="mb-6 bg-surface-variant rounded-xl p-5 border border-outline-variant">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-headline-sm text-on-surface flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary" style={{fontVariationSettings:"'FILL' 1"}}>monitor_heart</span>
+                      Crop Quality Score
+                    </h4>
+                    <span className={`font-label-bold text-sm px-3 py-1 rounded-full border ${labelColor}`}>{ql}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 bg-outline-variant/30 rounded-full h-4 overflow-hidden">
+                      <div
+                        className="h-4 rounded-full transition-all duration-1000"
+                        style={{ width: `${qs}%`, backgroundColor: barColor }}
+                      />
+                    </div>
+                    <span className="font-headline-md text-on-surface w-14 text-right" style={{color: barColor}}>{qs}/100</span>
+                  </div>
+                  {scanResult.color_analysis && (
+                    <p className="font-body-sm text-outline mt-2 italic">{scanResult.color_analysis}</p>
+                  )}
+                </div>
+              );
+            })()}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-surface-variant rounded-xl p-5 border border-outline-variant">
@@ -236,12 +362,12 @@ export default function Scanner() {
                   {scanResult.treatment}
                 </p>
                 <div className="mt-4 flex gap-3">
-                  <button className="bg-primary text-white font-label-bold px-5 py-2 rounded-lg hover:bg-primary-fixed-variant transition-colors shadow-sm">
+                  <Link to="/inventory" className="bg-primary text-white font-label-bold px-5 py-2 rounded-lg hover:bg-primary-fixed-variant transition-colors shadow-sm inline-block text-center">
                     Log in Inventory
-                  </button>
-                  <button className="bg-surface-container-lowest text-primary font-label-bold px-5 py-2 rounded-lg hover:bg-surface-variant transition-colors border border-primary/20">
+                  </Link>
+                  <Link to="/marketplace" className="bg-surface-container-lowest text-primary font-label-bold px-5 py-2 rounded-lg hover:bg-surface-variant transition-colors border border-primary/20 inline-block text-center">
                     Find Products
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

@@ -6,6 +6,7 @@ export default function BottomNavBar() {
     { name: "Co-Pilot", path: "/inventory", icon: "mic" },
     { name: "Scanner", path: "/scanner", icon: "center_focus_weak" },
     { name: "Market", path: "/marketplace", icon: "storefront" },
+    { name: "Wallet", path: "/wallet", icon: "account_balance_wallet" },
   ];
 
   return (

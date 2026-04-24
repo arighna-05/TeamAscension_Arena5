@@ -3,8 +3,11 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# Create an SQLite database file in the backend directory
-SQLALCHEMY_DATABASE_URL = "sqlite:///./agrilink.db"
+# Create an SQLite database file. On Vercel, use /tmp as it's the only writable directory.
+if os.environ.get("VERCEL"):
+    SQLALCHEMY_DATABASE_URL = "sqlite:////tmp/agrilink.db"
+else:
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./agrilink.db"
 
 # Setting check_same_thread=False is needed only for SQLite
 engine = create_engine(

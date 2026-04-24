@@ -6,6 +6,7 @@ import Scanner from "./pages/Scanner";
 import Marketplace from "./pages/Marketplace";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import Wallet from "./pages/Wallet";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -21,6 +22,7 @@ function App() {
               <Route path="inventory" element={<Inventory />} />
               <Route path="scanner" element={<Scanner />} />
               <Route path="marketplace" element={<Marketplace />} />
+              <Route path="wallet" element={<Wallet />} />
               <Route path="settings" element={<Settings />} />
             </Route>
           </Route>

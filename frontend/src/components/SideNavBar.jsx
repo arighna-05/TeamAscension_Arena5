@@ -8,6 +8,7 @@ export default function SideNavBar() {
     { name: "Inventory", path: "/inventory", icon: "inventory_2" },
     { name: "Scanner", path: "/scanner", icon: "photo_camera" },
     { name: "Marketplace", path: "/marketplace", icon: "handshake" },
+    { name: "Wallet", path: "/wallet", icon: "account_balance_wallet" },
     { name: "Settings", path: "/settings", icon: "settings" },
   ];
 

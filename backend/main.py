@@ -10,7 +10,7 @@ frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fronten
 
 from backend.database import engine
 from backend import models
-from backend.routers import inventory, marketplace, scanner
+from backend.routers import inventory, marketplace, scanner, wallet
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -19,6 +19,7 @@ models.Base.metadata.create_all(bind=engine)
 app.include_router(inventory.router)
 app.include_router(marketplace.router)
 app.include_router(scanner.router)
+app.include_router(wallet.router)
 
 import os
 from fastapi.responses import FileResponse
